@@ -26,7 +26,7 @@ public class ClientTests
     [InlineData(null, "123.456.789-00")]
     [InlineData("John Doe", null)]
     [InlineData(null, null)]
-    public void Client_Creation_ShouldThrowExceptionWhenAttributIsNull(string name, string NumberIdentify)
+    public void Client_Creation_ShouldThrowExceptionWhenAttributIsNull(string? name, string? NumberIdentify)
     {
 
         // Act
