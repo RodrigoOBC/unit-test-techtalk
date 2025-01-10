@@ -1,0 +1,49 @@
+trigger:
+- master
+# Task SonarQubePrepare@5: Prepare Analysis Configuration task
+# Task DotNetCoreCLI@2: Build DotNetCore task
+# Task SonarQubeAnalyze@5: Analysis Configuration task
+# 
+steps:
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    projects: '**/*Test.csproj'
+    arguments: --configuration Release --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+- task: PowerShell@2
+  inputs:
+    targetType: inline
+    script: |
+      $fileExists = Test-Path -Path "$(Agent.TempDirectory)/**/coverage.cobertura.xml"
+            Write-Output "##vso[task.setvariable variable=FileExists]$fileExists"
+  displayName: Check if report exists
+- script: |
+    dotnet tool install -g dotnet-reportgenerator-globaltool
+     reportgenerator -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/TestResults -reporttypes:"SonarQube"
+  condition: eq(variables.FileExists, 'True')
+  displayName: Convert Coverage Result
+- task: SonarQubePrepare@5
+  condition: eq(variables.FileExists, 'False')
+  inputs:
+    SonarQube: SonarQube
+    scannerMode: MSBuild
+    projectKey: Radix-Nexus_unit-test-techtalk_master
+  displayName: SonarQube Prepare - No test result
+- task: SonarQubePrepare@5
+  condition: eq(variables.FileExists, 'True')
+  inputs:
+    SonarQube: SonarQube
+    scannerMode: MSBuild
+    projectKey: Radix-Nexus_unit-test-techtalk_master
+    extraProperties: sonar.coverageReportPaths=$(Build.SourcesDirectory)/TestResults/SonarQube.xml
+  displayName: SonarQube Prepare - With test result
+- script: |
+    FILTERED_PARAMS=$(echo $SONARQUBE_SCANNER_PARAMS | sed 's/"sonar.branch.name":"[^"]*"\,//g' | sed 's/"sonar.pullrequest.branch":"[^"]*"\,//g' | sed 's/"sonar.pullrequest.base":"[^"]*"\,//g' | sed 's/"sonar.pullrequest.key":"[^"]*"\,//g')
+    echo "##vso[task.setvariable variable=SONARQUBE_SCANNER_PARAMS]$FILTERED_PARAMS"
+  displayName: Filter out non-CE sonar parameters
+- task: DotNetCoreCLI@2
+  inputs:
+    command: build
+    projects: $(Build.SourcesDirectory)/SimulatorBankUnitTest/*.sln
+    arguments: --configuration debug
+- task: SonarQubeAnalyze@5
