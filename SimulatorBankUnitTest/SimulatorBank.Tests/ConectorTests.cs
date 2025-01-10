@@ -14,13 +14,14 @@ namespace SimulatorBankUnitTest.Tests
             var mockConnection = new Mock<IDbConnection>();
             var mockCommand = new Mock<IDbCommand>();
             var mockParameters = new Mock<IDataParameterCollection>();
+            var Id_user = Guid.NewGuid();
 
             mockCommand.Setup(cmd => cmd.Parameters).Returns(mockParameters.Object);
             mockConnection.Setup(conn => conn.CreateCommand()).Returns(mockCommand.Object);
             var conector = new Conector(mockConnection.Object);
 
             // Act
-            conector.AddUser("060a3de1-f7c0-4d71-a69e-4030fa77157c", "John Doe", "123456");
+            conector.AddUser(Id_user.ToString(), "John Doe", "123456");
 
             // Assert
             // Verifica se a propriedade CommandText foi configurada corretamente
@@ -30,7 +31,7 @@ namespace SimulatorBankUnitTest.Tests
             // Verifica se o método ExecuteNonQuery foi chamado uma vez
             mockCommand.Verify(cmd => cmd.ExecuteNonQuery(), Times.Once);
             // verificar se a tabela user foi preenchida corretamente
-            mockParameters.Verify(p => p.Add(It.Is<IDataParameter>(p => p.ParameterName == "@id" && p.Value.Equals("060a3de1-f7c0-4d71-a69e-4030fa77157c"))), Times.Once);
+            mockParameters.Verify(p => p.Add(It.Is<IDataParameter>(p => p.ParameterName == "@id" && p.Value.Equals(Id_user.ToString()))), Times.Once);
 
         }
     }
