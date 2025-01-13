@@ -8,7 +8,7 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: test
-    projects: '**/*Test.csproj'
+    projects: '**/*Tests.csproj'
     arguments: --configuration Release --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
 - task: PowerShell@2
   inputs:
