@@ -34,5 +34,24 @@ namespace SimulatorBankUnitTest.Tests
             mockParameters.Verify(p => p.Add(It.Is<IDataParameter>(p => p.ParameterName == "@id" && p.Value.Equals(Id_user.ToString()))), Times.Once);
 
         }
+
+        [Fact]
+        public void AddUser_ShouldThrowException_WhenDatabaseErrorOccurs()
+        {
+            // Arrange
+            var mockConnection = new Mock<IDbConnection>();
+            var mockCommand = new Mock<IDbCommand>();
+            var mockParameters = new Mock<IDataParameterCollection>();
+            var Id_user = Guid.NewGuid();
+
+            mockCommand.Setup(cmd => cmd.Parameters).Returns(mockParameters.Object);
+            mockCommand.Setup(cmd => cmd.ExecuteNonQuery()).Throws(new Exception("Database error"));
+            mockConnection.Setup(conn => conn.CreateCommand()).Returns(mockCommand.Object);
+            var conector = new Conector(mockConnection.Object);
+
+            // Act & Assert
+            var exception = Assert.Throws<Exception>(() => conector.AddUser(Id_user.ToString(), "John Doe", "123456"));
+            Assert.Equal("Database error", exception.Message);
+        }
     }
 }

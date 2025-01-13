@@ -43,7 +43,6 @@ public class Account
 
     public async Task<decimal> Deposit(decimal value)
     {
-        var Balance = await GetBalance();
 
         if (value <= 0 || value == 0)
             throw new ArgumentException("The deposit value must be positive.");
@@ -56,7 +55,7 @@ public class Account
 
     public async Task<decimal> Withdraw(decimal value)
     {
-        var Balance = await GetBalance();
+
 
         if (value <= 0 || value == 0)
             throw new ArgumentException("The withdrawal value must be positive.");
@@ -77,7 +76,14 @@ public class Account
                 var response = await client.GetAsync("/Balance?NumberIdentify=12345678900");
                 var content = await response.Content.ReadAsStringAsync();
                 var balanceResponse = JsonSerializer.Deserialize<BalanceResponse>(content);
-                Balance = balanceResponse.Balance;
+                if (balanceResponse != null)
+                {
+                    Balance = balanceResponse.Balance;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Failed to retrieve balance.");
+                }
                 Conector.UpdateAccount(Number.ToString(), Balance);
 
             }

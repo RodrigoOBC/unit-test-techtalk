@@ -17,6 +17,11 @@ public class Client
         NumberIdentify = numberIdentify ?? throw new ArgumentNullException(nameof(numberIdentify));
         Conector = new Conector("Data Source=DB/myBank.db"); 
     }
+    
+    public void setConector(Conector conector)
+    {
+        Conector = conector;
+    }
 
     public bool Save()
     {   
