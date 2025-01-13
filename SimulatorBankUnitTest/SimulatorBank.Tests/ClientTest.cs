@@ -114,5 +114,31 @@ public class ClientTests
         // Assert
         Assert.Equal("Error to save user", exception.Message);
     }
+
+    [Fact]
+    public void Client_save_ShouldSaveClientErrorWhenUserExist()
+    {
+        // Arrange
+        string name = "Jane Doe";
+        string NumberIdentify = "987.654.321-00";
+        var client = new Client(name, NumberIdentify);
+
+        var mockConnection = new Mock<IDbConnection>();
+        var mockCommand = new Mock<IDbCommand>();
+        var mockParameters = new Mock<IDataParameterCollection>();
+
+        mockCommand.Setup(cmd => cmd.Parameters).Returns(mockParameters.Object);
+        mockCommand.Setup(cmd => cmd.ExecuteNonQuery()).Throws(new Exception("UNIQUE constraint failed: user.numberID"));
+        mockConnection.Setup(conn => conn.CreateCommand()).Returns(mockCommand.Object);
+        
+        var conector = new Conector(mockConnection.Object);
+        client.setConector(conector);
+
+        // Act 
+        var exception = Assert.Throws<ArgumentException>(() => client.Save());
+
+        // Assert
+        Assert.Equal("Error to save user: User already exists", exception.Message);
+    }
     
 }
