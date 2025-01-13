@@ -30,8 +30,10 @@ public class Client
             Conector.AddUser(Id.ToString(), Name, NumberIdentify);
             return true;
         }
-        catch (System.Exception)
+        catch (System.Exception ex )
         {
+            if (ex.Message.Contains("UNIQUE constraint failed: user.numberID"))
+                throw new ArgumentException("Error to save user: User already exists");
             throw new ArgumentException("Error to save user");
         }
         
@@ -46,6 +48,7 @@ public class Client
         }
         catch (System.Exception)
         {
+            
             throw new ArgumentException("Error to update user");
         }
     }
