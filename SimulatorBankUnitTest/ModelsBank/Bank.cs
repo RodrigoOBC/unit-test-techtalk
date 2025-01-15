@@ -2,18 +2,26 @@ namespace ModelsBank;
 
 public class Bank
 {
-    private readonly List<Account> _accounts = new List<Account>();
+    private List<Account> _accounts = new List<Account>();
 
-    public Account CreateAccount(Client client, decimal balance)
+    public Account CreateAccount(IClient client, decimal balance)
     {
         if (client == null)
             throw new ArgumentNullException(nameof(client));
         
         client.Save();
-        var account = new Account(client,balance);
+        var account = new Account(client as Client, balance);
         _accounts.Add(account);
         account.SaveaccountInDB();
         return account;
+    }
+
+    public void SetAccounts(List<Account> accounts)
+
+    {
+
+        _accounts = accounts;
+
     }
 
     public async Task<bool> setBonus(Guid accountNumber)

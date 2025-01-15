@@ -3,7 +3,16 @@
 using System;
 using SimulatorBankUnitTest.ModelsBank.DBConnect;
 
-public class Client
+
+public interface IClient
+    {
+        bool Save();
+        bool upadate();
+        void ChangeName(string name);
+        void ChangeCPF(string numberIdentify);
+    }
+
+public class Client : IClient
 {
     public Guid Id { get; private set; }
     public string Name { get; private set; }
