@@ -18,14 +18,16 @@ public class Account
 
     private Conector Conector { get; set; }
 
+    private HttpClient _httpClient;
 
-    public Account(Client holder, decimal balance)
+    public Account(Client holder, decimal balance, HttpClient httpClient = null)
     {
         Number = Guid.NewGuid();
         Holder = holder ?? throw new ArgumentNullException(nameof(holder));
         baseUrl = "https://fd757376-23b1-4fa3-a13f-93fa8cf11485.mock.pstmn.io";
         Balance =  0;
-        Conector = new Conector("Data Source=DB/myBank.db"); 
+        Conector = new Conector("Data Source=DB/myBank.db");
+        _httpClient = httpClient ?? new HttpClient();
     }
 
     public bool SaveaccountInDB()
@@ -70,34 +72,36 @@ public class Account
 
     public async Task setInitalBalance()
     {
-        using (var client = new HttpClient())
+        using (var client = _httpClient)
+        {
+            client.BaseAddress = new Uri(baseUrl);
+            var response = await client.GetAsync("/Balance?NumberIdentify=12345678900");
+            var content = await response.Content.ReadAsStringAsync();
+            var balanceResponse = JsonSerializer.Deserialize<BalanceResponse>(content);
+            if (balanceResponse != null)
             {
-                client.BaseAddress = new Uri(baseUrl);
-                var response = await client.GetAsync("/Balance?NumberIdentify=12345678900");
-                var content = await response.Content.ReadAsStringAsync();
-                var balanceResponse = JsonSerializer.Deserialize<BalanceResponse>(content);
-                if (balanceResponse != null)
-                {
-                    Balance = balanceResponse.Balance;
-                }
-                else
-                {
-                    throw new InvalidOperationException("Failed to retrieve balance.");
-                }
-                Conector.UpdateAccount(Number.ToString(), Balance);
-
+                Balance = balanceResponse.Balance;
             }
-            
+            else
+            {
+                throw new InvalidOperationException("Failed to retrieve balance.");
+            }
+        }
     }
 
     public async Task<decimal> GetBalance(){
         return Balance;
     }
 
+    public async Task<bool> upadteAccountBalance()
+    {
+        Conector.UpdateAccount(Number.ToString(), Balance);
+        return true;
+    }
+
     public async Task<bool> setBalance(decimal value)
     {
         Balance = value;
-        Conector.UpdateAccount(Number.ToString(), Balance);
         return true;
     }
 
