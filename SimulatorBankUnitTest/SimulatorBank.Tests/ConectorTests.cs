@@ -8,7 +8,7 @@ namespace SimulatorBankUnitTest.Tests
     public class ConectorTests
     {
         [Fact]
-        public void AddUser_ShouldAddUserToDatabase()
+        public void Conector_AddUser_ShouldAddUserToDatabase()
         {
             // Arrange
             var mockConnection = new Mock<IDbConnection>();
@@ -36,7 +36,7 @@ namespace SimulatorBankUnitTest.Tests
         }
 
         [Fact]
-        public void AddUser_ShouldThrowException_WhenDatabaseErrorOccurs()
+        public void Conector_AddUser_ShouldThrowExceptionWhenDatabaseErrorOccurs()
         {
             // Arrange
             var mockConnection = new Mock<IDbConnection>();

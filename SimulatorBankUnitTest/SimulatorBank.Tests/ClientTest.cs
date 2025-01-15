@@ -12,17 +12,16 @@ public class ClientTests
     public void Client_Creation_ShouldInitializeWithValidData()
     {
 
-        // Arrange
+        // Arrange: Configura os dados necessários para o teste
         string name = "John Doe";
         string NumberIdentify = "123.456.789-00";
 
-
-        // Act
+        // Act: Cria uma nova instância do objeto Client usando os dados configurados
         var client = new Client(name, NumberIdentify);
 
-        // Assert
+        // Assert: Verifica se os valores das propriedades do objeto Client são iguais aos valores esperados
         Assert.Equal(name, client.Name);
-        Assert.Equal(NumberIdentify, client.NumberIdentify);
+        Assert.Equal(NumberIdentify, client.NumberIdentify); 
 
     }
 
@@ -104,7 +103,7 @@ public class ClientTests
         mockCommand.Setup(cmd => cmd.Parameters).Returns(mockParameters.Object);
         mockCommand.Setup(cmd => cmd.ExecuteNonQuery()).Throws(new Exception("Database error"));
         mockConnection.Setup(conn => conn.CreateCommand()).Returns(mockCommand.Object);
-        
+
         var conector = new Conector(mockConnection.Object);
         client.setConector(conector);
 
@@ -130,7 +129,7 @@ public class ClientTests
         mockCommand.Setup(cmd => cmd.Parameters).Returns(mockParameters.Object);
         mockCommand.Setup(cmd => cmd.ExecuteNonQuery()).Throws(new Exception("UNIQUE constraint failed: user.numberID"));
         mockConnection.Setup(conn => conn.CreateCommand()).Returns(mockCommand.Object);
-        
+
         var conector = new Conector(mockConnection.Object);
         client.setConector(conector);
 
@@ -140,5 +139,5 @@ public class ClientTests
         // Assert
         Assert.Equal("Error to save user: User already exists", exception.Message);
     }
-    
+
 }

@@ -12,6 +12,24 @@ namespace SimulatorBank.Tests;
 
 public class AccountTests
 {
+
+    [Fact]
+    public void Account_Creation_ShouldInitializeWithValidData()
+    {
+        // Arrange
+        var clientMock = new Mock<Client>("teste", "123");
+        var balance = 0;
+        
+
+        // Act
+        var account = new Account(clientMock.Object, balance);
+
+        // Assert
+        Assert.Equal(clientMock.Object.Name, account.Holder.Name);
+        Assert.Equal(balance, account.Balance);
+    }
+
+
     [Fact]
     public async Task Account_setInitalBalance_ShouldSetBalanceCorrectly()
     {
