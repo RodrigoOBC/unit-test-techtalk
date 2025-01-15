@@ -35,6 +35,7 @@ public class Bank
         var account = FindAccount(accountNumber);
         var value = await account.Deposit(amount);
         await account.setBalance(value);
+        await account.upadteAccountBalance();
         return true;
     }
 
@@ -43,6 +44,7 @@ public class Bank
         var account = FindAccount(accountNumber);
         var value = await account.Withdraw(amount);
         await account.setBalance(value);
+        await account.upadteAccountBalance();
         return true;
     }
 
