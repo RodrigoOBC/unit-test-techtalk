@@ -1,26 +1,42 @@
+using SimulatorBankUnitTest.ModelsBank.DBConnect;
 namespace ModelsBank;
 
 public class Bank
 {
     private List<Account> _accounts = new List<Account>();
 
+    public Conector conector { get; set; }
+
     public Account CreateAccount(IClient client, decimal balance)
     {
-        if (client == null)
-            throw new ArgumentNullException(nameof(client));
-        
-        client.Save();
-        var account = new Account(client as Client, balance);
-        _accounts.Add(account);
-        account.SaveaccountInDB();
-        return account;
+        try
+        {
+            if (client == null)
+                throw new ArgumentNullException(nameof(client));
+
+            client.Save();
+            var account = new Account(client as Client, balance, conector);
+            _accounts.Add(account);
+            account.SaveaccountInDB();
+            return account;
+        }
+        catch (System.Exception)
+        {
+            throw new ArgumentException("Error to save account");
+        }
+
     }
 
-    public void SetAccounts(List<Account> accounts)
+    public List<Account> GetAccounts()
+    {
+        return _accounts;
+    }
+
+    public void SetAccounts(Account account)
 
     {
 
-        _accounts = accounts;
+        _accounts.Add(account);
 
     }
 

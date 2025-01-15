@@ -6,10 +6,20 @@ using SimulatorBankUnitTest.ModelsBank.DBConnect;
 
 public interface IClient
     {
+        
+
         bool Save();
         bool upadate();
         void ChangeName(string name);
         void ChangeCPF(string numberIdentify);
+
+        void setConector(Conector conector);
+
+        Guid Id { get; }
+
+        string NumberIdentify { get; }
+
+        string Name { get; }
     }
 
 public class Client : IClient

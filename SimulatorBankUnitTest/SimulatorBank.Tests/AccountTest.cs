@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Data;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -9,6 +10,7 @@ using SimulatorBankUnitTest.ModelsBank.DBConnect;
 using System.Net;
 using System.Text.Json;
 namespace SimulatorBank.Tests;
+using SimulatorBankUnitTest.ModelsBank.DBConnect;
 
 public class AccountTests
 {
@@ -19,10 +21,16 @@ public class AccountTests
         // Arrange
         var clientMock = new Mock<Client>("teste", "123");
         var balance = 0;
-        
+        var mockConnection = new Mock<IDbConnection>();
+        var mockCommand = new Mock<IDbCommand>();
+        var mockParameters = new Mock<IDataParameterCollection>();
+
+        mockCommand.Setup(cmd => cmd.Parameters).Returns(mockParameters.Object);
+        mockConnection.Setup(conn => conn.CreateCommand()).Returns(mockCommand.Object);
+        var conector = new Conector(mockConnection.Object);
 
         // Act
-        var account = new Account(clientMock.Object, balance);
+        var account = new Account(clientMock.Object, balance,conector);
 
         // Assert
         Assert.Equal(clientMock.Object.Name, account.Holder.Name);
@@ -34,6 +42,14 @@ public class AccountTests
     public async Task Account_setInitalBalance_ShouldSetBalanceCorrectly()
     {
         // Arrange
+        var mockConnection = new Mock<IDbConnection>();
+        var mockCommand = new Mock<IDbCommand>();
+        var mockParameters = new Mock<IDataParameterCollection>();
+        mockCommand.Setup(cmd => cmd.Parameters).Returns(mockParameters.Object);
+        mockConnection.Setup(conn => conn.CreateCommand()).Returns(mockCommand.Object);
+        var conector = new Conector(mockConnection.Object);
+
+
         var handlerMock = new Mock<HttpMessageHandler>();
         var responseMessage = new HttpResponseMessage
         {
@@ -56,7 +72,7 @@ public class AccountTests
         };
 
         var clientMock = new Mock<Client>("teste", "123");
-        var account = new Account(clientMock.Object, 0, httpClient);
+        var account = new Account(clientMock.Object, 0,conector, httpClient);
 
         // Act
         await account.setInitalBalance();

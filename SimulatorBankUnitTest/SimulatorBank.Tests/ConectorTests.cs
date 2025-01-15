@@ -7,6 +7,8 @@ namespace SimulatorBankUnitTest.Tests
 {
     public class ConectorTests
     {
+
+
         [Fact]
         public void Conector_AddUser_ShouldAddUserToDatabase()
         {
