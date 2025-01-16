@@ -1,19 +1,43 @@
+using SimulatorBankUnitTest.ModelsBank.DBConnect;
 namespace ModelsBank;
 
 public class Bank
 {
-    private readonly List<Account> _accounts = new List<Account>();
+    private List<Account> _accounts = new List<Account>();
 
-    public Account CreateAccount(Client client, decimal balance)
+    public Conector conector { get; set; }
+
+    public Account CreateAccount(IClient client, decimal balance)
     {
-        if (client == null)
-            throw new ArgumentNullException(nameof(client));
-        
-        client.Save();
-        var account = new Account(client,balance);
+        try
+        {
+            if (client == null)
+                throw new ArgumentNullException(nameof(client));
+
+            client.Save();
+            var account = new Account(client as Client, balance, conector);
+            _accounts.Add(account);
+            account.SaveaccountInDB();
+            return account;
+        }
+        catch (System.Exception)
+        {
+            throw new ArgumentException("Error to save account");
+        }
+
+    }
+
+    public List<Account> GetAccounts()
+    {
+        return _accounts;
+    }
+
+    public void SetAccounts(Account account)
+
+    {
+
         _accounts.Add(account);
-        account.SaveaccountInDB();
-        return account;
+
     }
 
     public async Task<bool> setBonus(Guid accountNumber)
@@ -35,6 +59,7 @@ public class Bank
         var account = FindAccount(accountNumber);
         var value = await account.Deposit(amount);
         await account.setBalance(value);
+        await account.upadteAccountBalance();
         return true;
     }
 
@@ -43,6 +68,7 @@ public class Bank
         var account = FindAccount(accountNumber);
         var value = await account.Withdraw(amount);
         await account.setBalance(value);
+        await account.upadteAccountBalance();
         return true;
     }
 

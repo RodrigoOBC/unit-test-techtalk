@@ -7,10 +7,27 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using SimulatorBankUnitTest.ModelsBank.DBConnect;
 
+
+public interface IAccount
+{
+    Guid Number { get; }
+    Client Holder { get; }
+    string baseUrl { get; }
+    decimal Balance { get; }
+
+    bool SaveaccountInDB();
+    Task<decimal> Deposit(decimal value);
+    Task<decimal> Withdraw(decimal value);
+    Task setInitalBalance();
+    Task<decimal> GetBalance();
+    Task<bool> upadteAccountBalance();
+    Task<bool> setBalance(decimal value);
+}
+
 public class Account
 {
     public Guid Number { get; private set; }
-    public Client Holder { get; private set; }
+    public IClient Holder { get; private set; }
 
     public string baseUrl { get; private set; }
 
@@ -18,14 +35,16 @@ public class Account
 
     private Conector Conector { get; set; }
 
+    private HttpClient _httpClient;
 
-    public Account(Client holder, decimal balance)
+    public Account(IClient holder, decimal balance, Conector conector, HttpClient httpClient = null)
     {
         Number = Guid.NewGuid();
         Holder = holder ?? throw new ArgumentNullException(nameof(holder));
         baseUrl = "https://fd757376-23b1-4fa3-a13f-93fa8cf11485.mock.pstmn.io";
-        Balance =  0;
-        Conector = new Conector("Data Source=DB/myBank.db"); 
+        Balance = balance;
+        Conector = conector ?? throw new ArgumentNullException(nameof(conector));
+        _httpClient = httpClient ?? new HttpClient();
     }
 
     public bool SaveaccountInDB()
@@ -70,41 +89,44 @@ public class Account
 
     public async Task setInitalBalance()
     {
-        using (var client = new HttpClient())
+        using (var client = _httpClient)
+        {
+            client.BaseAddress = new Uri(baseUrl);
+            var response = await client.GetAsync("/Balance?NumberIdentify=12345678900");
+            var content = await response.Content.ReadAsStringAsync();
+            var balanceResponse = JsonSerializer.Deserialize<BalanceResponse>(content);
+            if (balanceResponse != null)
             {
-                client.BaseAddress = new Uri(baseUrl);
-                var response = await client.GetAsync("/Balance?NumberIdentify=12345678900");
-                var content = await response.Content.ReadAsStringAsync();
-                var balanceResponse = JsonSerializer.Deserialize<BalanceResponse>(content);
-                if (balanceResponse != null)
-                {
-                    Balance = balanceResponse.Balance;
-                }
-                else
-                {
-                    throw new InvalidOperationException("Failed to retrieve balance.");
-                }
-                Conector.UpdateAccount(Number.ToString(), Balance);
-
+                Balance = balanceResponse.Balance;
             }
-            
+            else
+            {
+                throw new InvalidOperationException("Failed to retrieve balance.");
+            }
+        }
     }
 
-    public async Task<decimal> GetBalance(){
+    public async Task<decimal> GetBalance()
+    {
         return Balance;
+    }
+
+    public async Task<bool> upadteAccountBalance()
+    {
+        Conector.UpdateAccount(Number.ToString(), Balance);
+        return true;
     }
 
     public async Task<bool> setBalance(decimal value)
     {
         Balance = value;
-        Conector.UpdateAccount(Number.ToString(), Balance);
         return true;
     }
 
     private class BalanceResponse
-        {
-            public decimal Balance { get; set; }
-        }
-    
+    {
+        public decimal Balance { get; set; }
+    }
+
 
 }
